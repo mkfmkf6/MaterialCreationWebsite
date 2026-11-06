@@ -1,0 +1,13 @@
+# Node.js / Next.js
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+.env*
+!.env.example
+
+# Java / Maven
+target/
+
+# IDE
+.idea/

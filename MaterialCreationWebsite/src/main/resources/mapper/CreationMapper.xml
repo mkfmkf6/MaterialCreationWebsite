@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mcwebsite.materialcreationwebsite.mapper.CreationMapper">
+    <select id="findTemplates" resultType="com.mcwebsite.materialcreationwebsite.domain.entity.TemplateEntity">
+        SELECT t.id, t.name, t.category, t.ratio, t.image, t.accent, t.description,
+               r.required_image_count, r.accepted_mime_types, r.max_file_size_bytes
+        FROM templates t
+        JOIN template_requirements r ON r.template_id = t.id
+        WHERE t.active = TRUE
+        ORDER BY t.id
+    </select>
+
+    <select id="findTemplate" parameterType="string" resultType="com.mcwebsite.materialcreationwebsite.domain.entity.TemplateEntity">
+        SELECT t.id, t.name, t.category, t.ratio, t.image, t.accent, t.description,
+               r.required_image_count, r.accepted_mime_types, r.max_file_size_bytes
+        FROM templates t
+        JOIN template_requirements r ON r.template_id = t.id
+        WHERE t.id = #{id} AND t.active = TRUE
+    </select>
+
+    <select id="findTasks" resultType="com.mcwebsite.materialcreationwebsite.domain.entity.CreationTaskEntity">
+        SELECT id, user_id, template_id, template_name, template_image, file_name,
+               source_path, result_path, status, progress, stage, error_message, created_at
+        FROM creation_tasks
+        WHERE user_id = #{userId}
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="findTask" parameterType="string" resultType="com.mcwebsite.materialcreationwebsite.domain.entity.CreationTaskEntity">
+        SELECT id, user_id, template_id, template_name, template_image, file_name,
+               source_path, result_path, status, progress, stage, error_message, created_at
+        FROM creation_tasks
+        WHERE id = #{id}
+    </select>
+
+    <insert id="insertTask" parameterType="com.mcwebsite.materialcreationwebsite.domain.entity.CreationTaskEntity">
+        INSERT INTO creation_tasks (
+            id, user_id, template_id, template_name, template_image, file_name,
+            source_path, status, progress, stage
+        ) VALUES (
+            #{id}, #{userId}, #{templateId}, #{templateName}, #{templateImage}, #{fileName},
+            #{sourcePath}, #{status}, #{progress}, #{stage}
+        )
+    </insert>
+
+    <update id="updateTask" parameterType="com.mcwebsite.materialcreationwebsite.domain.entity.CreationTaskEntity">
+        UPDATE creation_tasks
+        SET status = #{status},
+            progress = #{progress},
+            stage = #{stage},
+            result_path = #{resultPath},
+            error_message = #{errorMessage}
+        WHERE id = #{id}
+    </update>
+</mapper>
