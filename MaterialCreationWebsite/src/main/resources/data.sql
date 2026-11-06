@@ -10,14 +10,14 @@ INSERT IGNORE INTO templates (id, name, category, ratio, image, accent, descript
 ('demo-postcard','旅行明信片','创意图片','3:2','https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=960&q=85','#dce7e8','上传两张旅行照片，模拟生成一张旅行明信片。');
 
 INSERT INTO template_requirements (template_id, required_image_count, accepted_mime_types, max_file_size_bytes) VALUES
-('t01',1,'image/jpeg,image/png,image/webp',12582912),
-('t02',1,'image/jpeg,image/png,image/webp',12582912),
-('t03',1,'image/jpeg,image/png,image/webp',12582912),
-('t04',1,'image/jpeg,image/png,image/webp',12582912),
-('t05',1,'image/jpeg,image/png,image/webp',12582912),
-('t06',1,'image/jpeg,image/png,image/webp',12582912),
-('t07',1,'image/jpeg,image/png,image/webp',12582912),
-('t08',1,'image/jpeg,image/png,image/webp',12582912),
+('t01',1,'image/jpeg,image/png',12582912),
+('t02',1,'image/jpeg,image/png',12582912),
+('t03',1,'image/jpeg,image/png',12582912),
+('t04',1,'image/jpeg,image/png',12582912),
+('t05',1,'image/jpeg,image/png',12582912),
+('t06',1,'image/jpeg,image/png',12582912),
+('t07',1,'image/jpeg,image/png',12582912),
+('t08',1,'image/jpeg,image/png',12582912),
 ('demo-postcard',2,'image/jpeg,image/png',5242880)
 ON DUPLICATE KEY UPDATE
   required_image_count = VALUES(required_image_count),

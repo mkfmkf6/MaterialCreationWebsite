@@ -12,6 +12,7 @@ public class MaterialCreationWebsiteApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(MaterialCreationWebsiteApplication.class, args);
+        System.out.println("项目启动成功");
     }
 
 }

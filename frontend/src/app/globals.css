@@ -34,3 +34,4 @@
 .upload-pick.has-file{display:block;padding:0}
 .remove-file{z-index:2}
 @media(max-width:760px){.history-heading{align-items:flex-start}.history-actions{gap:6px}.history-actions .primary-button{white-space:nowrap}.request-error{align-items:flex-start;font-size:10px}.request-error button{font-size:10px}.history-row{align-items:flex-start;padding:12px 0;flex-wrap:wrap}.history-main{padding-top:3px}.history-row .status{margin-left:auto}.task-stage{max-width:100%}.result-content{padding:16px}}
+.template-error{flex-direction:column;color:#b95e50}.template-error .text-link{color:#a85448}

@@ -92,7 +92,12 @@ export function createTask(
 
 export async function fetchTaskPreview(task: CreationTask, userId: DemoUser, signal?: AbortSignal): Promise<string> {
   if (!task.resultUrl) throw new Error("结果地址暂不可用");
-  const response = await fetch(`${apiBase}${task.resultUrl}`, {
+  const previewUrl = task.resultUrl.startsWith("http")
+    ? task.resultUrl
+    : task.resultUrl.startsWith("/")
+      ? `${new URL(apiBase).origin}${task.resultUrl}`
+      : `${apiBase.replace(/\/$/, "")}/${task.resultUrl}`;
+  const response = await fetch(previewUrl, {
     headers: { "X-Demo-User": userId },
     cache: "no-store",
     signal,

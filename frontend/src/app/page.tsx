@@ -48,6 +48,8 @@ function saveUser(userId: DemoUser) {
 export default function Home() {
   const [view, setView] = useState<"templates" | "history">("templates");
   const [templates, setTemplates] = useState<Template[]>([]);
+  const [templatesLoading, setTemplatesLoading] = useState(true);
+  const [templatesError, setTemplatesError] = useState("");
   const [category, setCategory] = useState("全部模板");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Template | null>(null);
@@ -96,11 +98,26 @@ export default function Home() {
     if (!previewUrl) return;
     return () => URL.revokeObjectURL(previewUrl);
   }, [previewUrl]);
+  const refreshTemplates = useCallback(async (signal?: AbortSignal) => {
+    setTemplatesLoading(true);
+    setTemplatesError("");
+    try {
+      const latest = await getTemplates(signal);
+      if (signal?.aborted) return;
+      setTemplates(latest);
+    } catch (error) {
+      if (signal?.aborted) return;
+      setTemplatesError(error instanceof Error ? error.message : "暂时无法加载模板，请重试");
+    } finally {
+      if (!signal?.aborted) setTemplatesLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     const controller = new AbortController();
-    getTemplates(controller.signal).then(setTemplates).catch(() => undefined);
-    return () => controller.abort();
-  }, []);
+    const timer = window.setTimeout(() => void refreshTemplates(controller.signal), 0);
+    return () => { window.clearTimeout(timer); controller.abort(); };
+  }, [refreshTemplates]);
 
   const refreshHistory = useCallback(async (showLoading = false) => {
     requestController.current?.abort();
@@ -330,10 +347,9 @@ export default function Home() {
         {view === "templates" ? <div className="page-content">
           <section className="welcome-row"><div><div className="eyebrow"><span /> CREATIVE WORKSPACE</div><h1>让灵感，马上成形。</h1><p>挑选一款喜欢的模板，上传你的图片，剩下的交给我们。</p></div><div className="welcome-meta"><span className="meta-icon"><Clock3 size={17} /></span><span><b>创作从这里开始</b><small>今天也有新灵感</small></span></div></section>
           <section className="feature-strip"><div className="feature-copy"><span className="feature-kicker"><Sparkles size={13} /> 本周精选</span><h2>给日常一点<br />新的视觉灵感</h2><p>自然色调与轻盈构图，让每一张产品图都更有故事感。</p><button onClick={() => { if (templates[0]) setSelected(templates[0]); window.scrollTo({ top: 0, behavior: "smooth" }); }}>看看精选模板 <ArrowRight size={15} /></button></div><div className="feature-image-wrap"><img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1400&q=90" alt="色彩丰富的自然食材与生活方式静物" /><span className="feature-image-tag">FRESH PICKS <b>04</b></span><div className="feature-caption"><span>01 / 04</span><i /><span>春日生活提案</span></div></div></section>
-          <section className="gallery-section"><div className="section-heading"><div><span className="section-overline">TEMPLATE LIBRARY</span><h2>发现好模板 <span>·</span> <small>把想法变成作品</small></h2></div><button className="text-link" onClick={() => { setCategory("全部模板"); setQuery(""); }}>查看全部 <ArrowRight size={15} /></button></div>
+            <section className="gallery-section"><div className="section-heading"><div><span className="section-overline">TEMPLATE LIBRARY</span><h2>发现好模板 <span>·</span> <small>把想法变成作品</small></h2></div><button className="text-link" onClick={() => { setView("templates"); setCategory("全部模板"); setQuery(""); document.querySelector(".gallery-section")?.scrollIntoView({ behavior: "smooth", block: "start" }); }}>查看全部 <ArrowRight size={15} /></button></div>
             <div className="gallery-controls"><div className="category-tabs">{categories.map((item) => <button key={item} className={category === item ? "selected" : ""} onClick={() => setCategory(item)}>{item}</button>)}</div><label className="search-box"><Search size={16} /><input aria-label="搜索模板" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索模板" /><kbd>⌘ K</kbd></label></div>
-            <div className="template-grid">{filtered.map((item, index) => <button className="template-card" key={item.id} onClick={() => { clearFiles(); setSelected(item); setNotice(""); }}><div className="template-image" style={{ backgroundColor: item.accent }}><img src={item.image} alt={item.name} loading="lazy" /><span className="ratio-tag">{item.ratio}</span><span className="image-index">{String(index + 1).padStart(2, "0")}</span></div><div className="template-info"><span>{item.category} · {item.requiredImageCount} 张图</span><h3>{item.name}</h3><ArrowRight size={16} className="card-arrow" /></div></button>)}</div>
-            {!filtered.length && <div className="empty-search"><Search size={20} /><span>没有找到匹配的模板</span></div>}
+            {templatesLoading ? <div className="empty-search" role="status"><LoaderCircle size={20} className="spin" /><span>正在加载模板</span></div> : templatesError ? <div className="empty-search template-error" role="alert"><span>{templatesError}</span><button className="text-link" onClick={() => void refreshTemplates()}><RefreshCw size={15} />重试</button></div> : !templates.length ? <div className="empty-search"><LayoutGrid size={20} /><span>暂无可用模板</span></div> : <><div className="template-grid">{filtered.map((item, index) => <button className="template-card" key={item.id} onClick={() => { clearFiles(); setSelected(item); setNotice(""); }}><div className="template-image" style={{ backgroundColor: item.accent }}><img src={item.image} alt={item.name} loading="lazy" /><span className="ratio-tag">{item.ratio}</span><span className="image-index">{String(index + 1).padStart(2, "0")}</span></div><div className="template-info"><span>{item.category} · {item.requiredImageCount} 张图</span><h3>{item.name}</h3><ArrowRight size={16} className="card-arrow" /></div></button>)}</div>{!filtered.length && <div className="empty-search"><Search size={20} /><span>没有找到匹配的模板</span></div>}</>}
           </section>
         </div> : <div className="page-content history-page">
           <section className="history-heading"><div><div className="eyebrow"><span /> YOUR CREATIONS</div><h1>我的创作</h1><p>{users.find((user) => user.id === userId)?.name}的个人任务记录</p></div><div className="history-actions"><button className="icon-action" aria-label="刷新任务记录" title="刷新任务记录" onClick={() => refreshHistory(true)} disabled={historyLoading}><RefreshCw size={16} className={historyLoading ? "spin" : ""} /></button><button className="primary-button" onClick={() => setView("templates")}><Plus size={17} />开始新创作</button></div></section>

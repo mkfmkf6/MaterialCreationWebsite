@@ -11,6 +11,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Iterator;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
+import javax.imageio.ImageIO;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -72,6 +77,7 @@ public class CreationService {
                 throw new IllegalArgumentException("该模板仅接受 " + String.join("、", acceptedMimeTypes) + " 格式。");
             if (image.getSize() > template.getMaxFileSizeBytes())
                 throw new IllegalArgumentException("每张图片不能超过 " + template.getMaxFileSizeBytes() / 1024 / 1024 + " MB。");
+            validateImageContent(image);
 
             String originalName = image.getOriginalFilename() == null
                     ? "image" : Path.of(image.getOriginalFilename()).getFileName().toString().replaceAll("[\\r\\n]", " ");
@@ -119,6 +125,33 @@ public class CreationService {
         return new TemplateVO(template.getId(), template.getName(), template.getCategory(), template.getRatio(),
                 template.getImage(), template.getAccent(), template.getDescription(), template.getRequiredImageCount(),
                 acceptedMimeTypes, template.getMaxFileSizeBytes());
+    }
+
+    private void validateImageContent(MultipartFile image) throws IOException {
+        try (InputStream input = image.getInputStream()) {
+            try (ImageInputStream imageInput = ImageIO.createImageInputStream(input)) {
+                if (imageInput == null) throw invalidImage();
+                Iterator<ImageReader> readers = ImageIO.getImageReaders(imageInput);
+                if (!readers.hasNext()) throw invalidImage();
+                ImageReader reader = readers.next();
+                try {
+                    reader.setInput(imageInput, true, true);
+                    String format = reader.getFormatName().toLowerCase();
+                    String mimeType = image.getContentType();
+                    boolean matches = "image/png".equals(mimeType) ? format.equals("png")
+                            : "image/jpeg".equals(mimeType) && (format.equals("jpeg") || format.equals("jpg"));
+                    if (!matches || reader.read(0) == null) throw invalidImage();
+                } finally {
+                    reader.dispose();
+                }
+            }
+        } catch (IOException exception) {
+            throw invalidImage();
+        }
+    }
+
+    private IllegalArgumentException invalidImage() {
+        return new IllegalArgumentException("上传文件不是可识别的图片。请重新选择 JPEG 或 PNG 图片。");
     }
 
     private CreationTaskVO toTaskVO(CreationTaskEntity task) {
