@@ -6,7 +6,7 @@
 
 - Java 21、Spring Boot 3.3.5、MyBatis-Plus 3.5.9；SQL 映射使用 MyBatis XML。
 - MySQL 8.4。
-- Node.js 20.19+、Next.js 16、React 19、TypeScript 5.7、Vitest 5。
+- Node.js 22.12+、Next.js 16、React 19、TypeScript 5.7、Vitest 5。
 - Maven 3.9+（容器构建使用 Maven 3.9.10）；npm 使用 `frontend/package-lock.json` 锁定依赖。
 
 GitHub Actions 在 push、pull request 和手动触发时执行前端 lint、类型检查、Vitest、Next.js 构建，以及后端 Maven 测试和打包。
@@ -55,7 +55,7 @@ MySQL 数据和上传／结果文件分别保存在 `material_creation_data`、`
 
 ## 本机启动
 
-依赖：JDK 21、Maven 3.9+、Node.js 20.19+、npm 和 MySQL 8.4。先在 MySQL 中创建数据库：
+依赖：JDK 21、Maven 3.9+、Node.js 22.12+、npm 和 MySQL 8.4。先在 MySQL 中创建数据库：
 
 ```sql
 CREATE DATABASE material_creation CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
